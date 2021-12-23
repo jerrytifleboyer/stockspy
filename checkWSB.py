@@ -1,6 +1,7 @@
 # reddit acc info from:  https://www.reddit.com/prefs/apps 
 import json
 import praw #this works, it's lying
+from discord import ping_me_on_discord
 
 mytickers = {
     'AAPL':'APPLE',
@@ -25,14 +26,11 @@ def create_reddit_object():
 reddit = create_reddit_object()
 
 def checkout_subreddit(ticker):
-    headlines = {}
     keyword = [ticker, mytickers[ticker]]
     for subreddit in subredditlist:
         for submission in reddit.subreddit(subreddit).new(limit=100):
             if any(xx in submission.title.upper() for xx in keyword) and not any(yy in submission.url for yy in ignored_keywords):
-                headlines[submission.title] = submission.url
-                print(submission.title, submission.url)
-    return headlines
+                ping_me_on_discord(f'{submission.title}\n{submission.url}')
 
 if __name__=="__main__":
     print(checkout_subreddit())
