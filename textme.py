@@ -21,7 +21,7 @@ def send_priceChange_via_email(
 
     sender_email, email_token = sender_credentials
     receiver_email = f'{number}{carrier}'
-    email_message =  f'To:{receiver_email}\n{message}'
+    email_message =  f'To:{receiver_email}\r\n{message}'
 
     with smtplib.SMTP_SSL(smtp_server, smtp_port, context = ssl.create_default_context()) as email:
         email.login(sender_email, email_token)
@@ -31,4 +31,4 @@ def textme(message):
     sender_credentials = (gmail,token)
     send_priceChange_via_email(mobile, message, sender_credentials)
 
-# textme("gm sexy")
+# textme("gm sexy, tsla dropped 5%")

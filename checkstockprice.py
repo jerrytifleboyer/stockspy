@@ -16,9 +16,9 @@ with open('config/pw.json') as f:
 
 #check stock price, gather return info and text/discord me
 def checkstockprice(ticker, curr_price, moving_avg, drop5percent, drop2percent, rose5percent, rose2percent):
-    moving_avg.pop(0)
-    moving_avg.append(curr_price)
-    moving_avg = sum(moving_avg)/2 #the moving average is an array size of 2
+    # moving_avg.pop(0)
+    # moving_avg.append(curr_price)
+    # moving_avg = sum(moving_avg)/2 #the moving average is an array size of 2
     #TODO, do something with moving averages, trending downward/upward?
     #TODO, do something with volume?
 
