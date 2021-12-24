@@ -13,8 +13,6 @@ subredditlist = ['wallstreetbets', 'stocks', 'investing', 'stockmarket']
 
 ignored_keywords = ['gallery', 'redd.it']
 
-# ticker = "TSLA" #test
-
 def create_reddit_object():
     with open('config/pw.json') as f:
         data = json.load(f)
@@ -32,5 +30,4 @@ def checkout_subreddit(ticker):
             if any(xx in submission.title.upper() for xx in keyword) and not any(yy in submission.url for yy in ignored_keywords):
                 ping_me_on_discord(f'{submission.title}\n{submission.url}')
 
-if __name__=="__main__":
-    print(checkout_subreddit())
+# checkout_subreddit("tsla") #test

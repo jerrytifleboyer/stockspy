@@ -31,5 +31,4 @@ def textme(message):
     sender_credentials = (gmail,token)
     send_priceChange_via_email(mobile, message, sender_credentials)
 
-if __name__=="__main__":
-    textme()
+# textme("gm sexy")
