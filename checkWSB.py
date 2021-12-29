@@ -23,11 +23,11 @@ def create_reddit_object():
     return reddit
 reddit = create_reddit_object()
 
-def checkout_subreddit(ticker):
+def check_subreddits(ticker):
     keyword = [ticker, mytickers[ticker]]
     for subreddit in subredditlist:
         for submission in reddit.subreddit(subreddit).new(limit=100):
             if any(xx in submission.title.upper() for xx in keyword) and not any(yy in submission.url for yy in ignored_keywords):
                 ping_me_on_discord(f'{submission.title}\n{submission.url}')
 
-# checkout_subreddit("tsla") #test
+# check_subreddits("TSLA") #test

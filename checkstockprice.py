@@ -1,81 +1,82 @@
 myholdings = {
     'avgAAPLholdings' : 0, #170
     'avgNVDAholdings' : 0, #275
-    'avgTSLAholdings' : 10, #920
+    'avgTSLAholdings' : 0, #920
 }
+stocks = "AAPL,NVDA,TSLA"
 
 import requests
 import json
 import time
 from textme import textme
-from checkWSB import checkout_subreddit
+from checkWSB import check_subreddits
+from marketsentiment import check_market_sentiment
 
 with open('config/pw.json') as f:
     data = json.load(f)
     secret = data["FMP_API"]["secret"]
 
-#check stock price, gather return info and text/discord me
-def checkstockprice(ticker, curr_price, moving_avg, drop5percent, drop2percent, rose5percent, rose2percent):
-    # moving_avg.pop(0)
-    # moving_avg.append(curr_price)
-    # moving_avg = sum(moving_avg)/2 #the moving average is an array size of 2
-    #TODO, do something with moving averages, trending downward/upward?
-    #TODO, do something with volume?
+dic = {}
+currprice = 0
+openingprice = 1
+# vol = 2
+# avgVol = 3
 
-    if ticker not in dropping and rising:
+def main(stocks, secret):
+    #it texts me too much, 30min buffer time added
+    list_of_stocks_moved = []
+    timer = 15
+
+    # while '06:30:00' < time.ctime().split(" ")[3] and time.ctime().split(" ")[3] <'12:50:00': #disable when testing
+    if timer == 0: #clear list and restart timer
+        list_of_stocks_moved = []
+        timer = 15
+    elif list_of_stocks_moved: #only decrement the time, if there's a value in the list
+        timer -= 1
+
+    tickerdata = requests.get(f'https://financialmodelingprep.com/api/v3/quote/{stocks}?apikey={secret}').json()
+    for ii in tickerdata:
+        dic[ii['symbol']] = [ii['price'], ii['open'], ii['volume'], ii['avgVolume']]
+    print(dic)
+    for ticker in dic:
+        drop2percent = myholdings[f'avg{ticker}holdings'] * 0.985 or dic[ticker][openingprice] * 0.975
+        drop5percent = myholdings[f'avg{ticker}holdings'] * 0.95 or dic[ticker][openingprice] * 0.95
+        rose5percent = myholdings[f'avg{ticker}holdings'] * 1.05 or dic[ticker][openingprice] * 1.05
+        rose2percent = myholdings[f'avg{ticker}holdings'] * 1.025 or dic[ticker][openingprice] * 1.025
+        check_stock_price(ticker, dic[ticker][currprice], drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved)
+
+        # time.sleep(120) #disable when testing
+
+#check stock price, gather return info and text/discord me
+def check_stock_price(ticker, curr_price, drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved):
+    if ticker not in list_of_stocks_moved:
         #price drops, BUY
         if drop5percent > curr_price:
             text = f'{ticker} dropped 5%'
-            dropping.append(ticker)
             textme(text)
-            checkout_subreddit(ticker)
+            check_market_sentiment(ticker)
+            check_subreddits(ticker)
         elif drop2percent > curr_price:
             text = f'{ticker} dropped 2.5%'
-            dropping.append(ticker)
             textme(text)
+            check_market_sentiment(ticker)
+            check_subreddits(ticker)
 
         #price goes up, SELL
         elif rose5percent < curr_price:
             text = f'{ticker} rose 5%'
-            rising.append(ticker)
             textme(text)
-            checkout_subreddit(ticker)
+            check_market_sentiment(ticker)
+            check_subreddits(ticker)
         elif rose2percent < curr_price:
-            pass
-        #idk what to do, prob nothing cause who cares if it goes up 2.5%
+            text = f'{ticker} rose 2.5%'
+            textme(text)
+            check_market_sentiment(ticker)
+            check_subreddits(ticker)
 
-    time.sleep(40)
-
-#it texts me too much, 30min buffer time added
-dropping = []
-rising = []
-timer = 10
-
-stocks = "AAPL,NVDA,TSLA"
-dic = {}
-currprice = 0
-openingprice = 1
-movingavg = 2 #the moving average is an array size of 2
-vol = 3
-avgVol = 4
+        list_of_stocks_moved.append(ticker)
 
 #runs everything below
-textme(f'{time.ctime()}, good morning cutie-kun')
+textme(f'\r\n{time.ctime()}, good morning cutie-kun')
 
-while '06:00:00' < time.ctime().split(" ")[3] and time.ctime().split(" ")[3] <'12:50:00':
-    if timer == 0:
-        dropping = []
-        rising = []
-        timer = 10
-    timer-=1
-
-    tickerdata = requests.get(f'https://financialmodelingprep.com/api/v3/quote/{stocks}?apikey={secret}').json()
-    for ii in tickerdata:
-        dic[ii['symbol']] = [ii['price'], ii['open'], [ii['open']]*2, ii['volume'], ii['avgVolume']]
-    
-    for ticker in dic:
-        drop2percent = myholdings[f'avg{ticker}holdings'] * 0.985 or dic[ticker][openingprice] * 0.985
-        drop5percent = myholdings[f'avg{ticker}holdings'] * 0.95 or dic[ticker][openingprice] * 0.95
-        rose5percent = myholdings[f'avg{ticker}holdings'] * 1.05 or dic[ticker][openingprice] * 1.05
-        rose2percent = myholdings[f'avg{ticker}holdings'] * 1.025 or dic[ticker][openingprice] * 1.025
-        checkstockprice(ticker, dic[ticker][currprice], dic[ticker][movingavg], drop5percent, drop2percent, rose5percent, rose2percent)
+main(stocks, secret)

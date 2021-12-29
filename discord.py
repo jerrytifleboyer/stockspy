@@ -10,4 +10,4 @@ def ping_me_on_discord(content):
 
      requests.post(channel, data={"content":content}, headers={"authorization":auth})
 
-# ping_me_on_discord("hello world")
+# ping_me_on_discord("hello world") #test
