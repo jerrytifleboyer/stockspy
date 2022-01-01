@@ -11,7 +11,7 @@ mytickers = {
 
 today = date.today().strftime('%b. %d, %Y')
 
-neg_list= ['problem', 'hurdle', 'looms', 'clos', 'antitrust', 'bear', 'ordered to change', '’t', 'end', 'meme', 'fall', 'downgrade', 'decreas', 'down', 'dip', 'late']
+neg_list= ['problem', 'hurdle', 'looms', 'clos', 'antitrust', 'bear', 'ordered to change', '’t', 'end', 'meme', 'fall', 'downgrade', 'decreas', 'down', 'dip', 'late', 'loss', 'miss']
 pos_list= ['rise', 'gain', 'rall', 'jump', 'is up', 'are up', 'was up', 'bull', 'build', 'outperform', 'strong', 'best', 'buy', 'pop', 'highlight', 'win', 'upgrade', 'increas', 'top', 'growth']
 
 def check_market_sentiment(stock):
