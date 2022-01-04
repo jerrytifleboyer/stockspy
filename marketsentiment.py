@@ -1,18 +1,23 @@
 from bs4 import BeautifulSoup
 import requests
 from datetime import date
-from textme import textme
 
 mytickers = {
     'AAPL':'apple',
     'TSLA':'tesla',
-    'NVDA':'nvidia'
+    'NVDA':'nvidia',
+    'AMD':'amd',
+    'GOOG':'google',
+    'FB':'meta',
+    'MU':'micron',
+    'MSFT':'microsoft',
+    'RBLX':'roblox'
 }
 
-today = date.today().strftime('%b. %d, %Y')
-
-neg_list= ['problem', 'hurdle', 'looms', 'clos', 'antitrust', 'bear', 'ordered to change', '’t', 'end', 'meme', 'fall', 'downgrade', 'decreas', 'down', 'dip', 'late', 'loss', 'miss']
-pos_list= ['rise', 'gain', 'rall', 'jump', 'is up', 'are up', 'was up', 'bull', 'build', 'outperform', 'strong', 'best', 'buy', 'pop', 'highlight', 'win', 'upgrade', 'increas', 'top', 'growth']
+today = date.today().strftime('%b. %#d, %Y')
+# print(today) #testing purposes
+neg_list= ['bad', 'criticism', 'recall', 'drop', 'problem', 'hurdle', 'looms', 'clos', 'antitrust', 'bear', 'ordered to change', '’t', 'end', 'meme', 'fall', 'downgrade', 'decreas', 'down', 'dip', 'late', 'loss', 'miss']
+pos_list= ['good', 'new', 'rise', 'gain', 'rall', 'jump', 'is up', 'are up', 'was up', 'bull', 'build', 'outperform', 'strong', 'best', 'buy', 'pop', 'win', 'upgrade', 'increas', 'top', 'growth']
 
 def check_market_sentiment(stock):
         sentiment_counter = 0
@@ -29,13 +34,17 @@ def check_market_sentiment(stock):
                 pass
 
             now = title.div.span.text
-            if today in now and mytickers[stock] in headline:
-                total, outlook, sentiment_counter = calculate_article_score(headline, sentiment_counter)
-                # print(total, outlook, headline)
 
-        determine_market_sentiment(stock, sentiment_counter)
+            if today in now and mytickers[stock] in headline:
+                sentiment_counter, pos_counter, neg_counter, total, outlook = calculate_article_score(headline, sentiment_counter)
+                # print(total, outlook, headline) #testing
+
+        message = determine_market_sentiment(stock, sentiment_counter, pos_counter, neg_counter)
+        return message
 
 def calculate_article_score(headline, sentiment_counter):
+    #count pos and neg headlines, regardless of how many overwhelmingly pos or negs are in the sentence
+    #each headline only has a weight of 1
     neg_counter = 0
     pos_counter = 0
 
@@ -54,17 +63,16 @@ def calculate_article_score(headline, sentiment_counter):
         sentiment_counter -=1
     else:
         outlook = "neutral"
-    return total, outlook, sentiment_counter
+    return sentiment_counter, pos_counter, neg_counter, total, outlook
 
-def determine_market_sentiment(stock, sentiment_counter):
+def determine_market_sentiment(stock, sentiment_counter, pos_counter, neg_counter):
     if sentiment_counter > 0:
         sentiment = "BULLISH"
     elif sentiment_counter < 0:
         sentiment = "BEARISH"
     else:
         sentiment = "KANGAROO-ISH"
-    message = f'{stock} news is {sentiment}({sentiment_counter}) today'
-    # print(message)
-    textme(message)
+    message = f'{stock} news is {sentiment}({pos_counter})|({neg_counter}) today'
+    return message
 
-# check_market_sentiment('TSLA') #test
+# print(check_market_sentiment('TSLA')) #test
