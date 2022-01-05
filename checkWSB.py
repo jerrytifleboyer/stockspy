@@ -6,7 +6,13 @@ from discord import ping_me_on_discord
 mytickers = {
     'AAPL':'APPLE',
     'TSLA':'TESLA',
-    'NVDA':'NVIDIA'
+    'NVDA':'NVIDIA',
+    'AMD':'AMD',
+    'GOOG':'GOOGLE',
+    'FB':'META',
+    'MU':'MICRON',
+    'MSFT':'MICROSOFT',
+    'RBLX':'ROBLOX'
 }
 
 subredditlist = ['wallstreetbets', 'stocks', 'investing', 'stockmarket']
@@ -24,6 +30,7 @@ def create_reddit_object():
 reddit = create_reddit_object()
 
 def check_subreddits(ticker):
+    ping_me_on_discord(f"REDDIT NEWS: {ticker}")
     keyword = [ticker, mytickers[ticker]]
     for subreddit in subredditlist:
         for submission in reddit.subreddit(subreddit).new(limit=100):
