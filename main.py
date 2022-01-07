@@ -31,14 +31,15 @@ def track_ticker_price(stocks, secret):
     # vol = 2 #un-used
     # avgVol = 3 #un-used
 
-    #it texts me too much, 30min buffer time added
+    #it texts me too much, 30min delay added
     list_of_stocks_moved = []
     timer = 15
-    delay = 120
+    stockAPIdelay = 90
+    redditPrawDelay = 5
 
     print(time.ctime().split(" ")[4])
 
-    while '06:30:00' < time.ctime().split(" ")[4] and time.ctime().split(" ")[4] <'12:50:00': #disable when testing
+    while '06:30:00' < time.ctime().split(" ")[4] and time.ctime().split(" ")[4] <'12:30:00': #disable when testing
         if timer == 0: #clear list and restart timer
             list_of_stocks_moved = []
             timer = 15
@@ -53,49 +54,50 @@ def track_ticker_price(stocks, secret):
         print(f'dictionary {dic}')
 
         for ticker in dic:
-            drop2percent = myholdings[f'avg{ticker}holdings'] * 0.985 or dic[ticker][yesterdayClosePrice] * 0.975
+            drop2percent = myholdings[f'avg{ticker}holdings'] * 0.975 or dic[ticker][yesterdayClosePrice] * 0.975
             drop5percent = myholdings[f'avg{ticker}holdings'] * 0.95 or dic[ticker][yesterdayClosePrice] * 0.95
             rose5percent = myholdings[f'avg{ticker}holdings'] * 1.05 or dic[ticker][yesterdayClosePrice] * 1.05
             rose2percent = myholdings[f'avg{ticker}holdings'] * 1.025 or dic[ticker][yesterdayClosePrice] * 1.025
+            
             oneBigText = report_ticker_movement(ticker, dic[ticker][currprice], drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, oneBigText)
+            time.sleep(redditPrawDelay)
 
         if oneBigText:
             textme(oneBigText)
             oneBigText = ""
 
-        time.sleep(delay) #disable when testing
+        time.sleep(stockAPIdelay) #disable when testing
 
 #check stock price, gather return info and text/discord me
 def report_ticker_movement(ticker, curr_price, drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, oneBigText):
     if ticker not in list_of_stocks_moved:
         #price drops, BUY
         if drop5percent > curr_price:
-            movement = f'{ticker} is down 5%'
+            movement = f'{ticker} down 5%'
             sentiment = check_market_sentiment(ticker)
-            oneBigText += f'{movement}\n{sentiment}\n'
+            oneBigText += f'{movement}, {sentiment}\n'
             check_subreddits(ticker)
+            list_of_stocks_moved.append(ticker)
         elif drop2percent > curr_price:
-            movement = f'{ticker} is down 2.5%'
+            movement = f'{ticker} down 2.5%'
             sentiment = check_market_sentiment(ticker)
-            oneBigText += f'{movement}\n{sentiment}\n'
             check_subreddits(ticker)
             
         #price goes up, SELL
         elif rose5percent < curr_price:
-            movement = f'{ticker} is up 5%'
+            movement = f'{ticker} up 5%'
             sentiment = check_market_sentiment(ticker)
-            oneBigText += f'{movement}\n{sentiment}\n'
+            oneBigText += f'{movement}, {sentiment}\n'
             check_subreddits(ticker)
+            list_of_stocks_moved.append(ticker)
         elif rose2percent < curr_price:
-            movement = f'{ticker} is up 2.5%'
+            movement = f'{ticker} up 2.5%'
             sentiment = check_market_sentiment(ticker)
-            oneBigText += f'{movement}\n{sentiment}\n'
             check_subreddits(ticker)
 
-        list_of_stocks_moved.append(ticker)
         return oneBigText
 
 #runs everything below
-textme(f'\r\n{time.ctime()}, good morning cutie-kun') 
+# textme(f'\r\n{time.ctime()}, good morning cutie-kun')
 
 track_ticker_price(stocks, secret)
