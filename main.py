@@ -7,7 +7,7 @@ myholdings = {
     'avgGOOGholdings' : 2905,
     'avgFBholdings' : 339,
     'avgMUholdings' : 95,
-    'avgMSFTholdings' : 333,
+    'avgMSFTholdings' : 328,
     'avgRBLXholdings' : 100
 }
 stocks = "AAPL,NVDA,TSLA,AMD,GOOG,FB,MU,MSFT,RBLX"
@@ -98,6 +98,6 @@ def report_ticker_movement(ticker, curr_price, drop5percent, drop2percent, rose5
         return oneBigText
 
 #runs everything below
-# textme(f'\r\n{time.ctime()}, good morning cutie-kun')
+# textme(f'\r\n{time.ctime()}, good morning cutie-kun') #when it runs on scheduler
 
 track_ticker_price(stocks, secret)
