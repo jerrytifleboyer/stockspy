@@ -80,9 +80,9 @@ def report_ticker_movement(ticker, curr_price, drop5percent, drop2percent, rose5
             list_of_stocks_moved.append(ticker)
         elif drop2percent > curr_price:
             movement = f'{ticker} down 2.5%'
-            sentiment = check_market_sentiment(ticker)
-            check_subreddits(ticker)
-            
+            textme(movement)
+            list_of_stocks_moved.append(ticker)
+
         #price goes up, SELL
         elif rose5percent < curr_price:
             movement = f'{ticker} up 5%'
@@ -92,12 +92,11 @@ def report_ticker_movement(ticker, curr_price, drop5percent, drop2percent, rose5
             list_of_stocks_moved.append(ticker)
         elif rose2percent < curr_price:
             movement = f'{ticker} up 2.5%'
-            sentiment = check_market_sentiment(ticker)
-            check_subreddits(ticker)
-
-        return oneBigText
+            textme(movement)
+            list_of_stocks_moved.append(ticker)
+    return oneBigText
 
 #runs everything below
-# textme(f'\r\n{time.ctime()}, good morning cutie-kun') #when it runs on scheduler
+# textme(f'\r\n{time.ctime()}, good morning cutie-kun') #turn on when it runs of scheduler
 
 track_ticker_price(stocks, secret)
