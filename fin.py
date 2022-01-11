@@ -10,28 +10,27 @@ myholdings = {
     'avgMSFTholdings' : 328,
     'avgRBLXholdings' : 100
 }
-stocks = "AAPL,NVDA,TSLA,AMD,GOOG,FB,MU,MSFT,RBLX"
+stocks = ["AAPL","NVDA","TSLA","AMD","GOOG","FB","MU","MSFT","RBLX"]
 
-import requests
+import finnhub
 import json
 import time
 from textme import textme
 from checkWSB import check_subreddits
 from marketsentiment import check_market_sentiment
 
+
 with open('config/pw.json') as f:
     data = json.load(f)
-    secret = data["FMP_API"]["secret"]
+    secret = data["finnhub"]["secret"]
+    finnhub_client = finnhub.Client(api_key=secret)
 
-def track_ticker_price(stocks, secret):
-    dic = {}
-    currprice = 0
-    yesterdayClosePrice = 1
+
+def track_ticker_price(stocklist):
+    currprice = "c"
+    yesterdayClosePrice = "pc"
     oneBigText = ""
-    # vol = 2 #un-used
-    # avgVol = 3 #un-used
-
-    #it texts me too much, 30min delay added
+    
     list_of_stocks_moved = []
     timer = 15
     stockAPIdelay = 90
@@ -41,26 +40,21 @@ def track_ticker_price(stocks, secret):
     print(time.ctime().split(" ")[weirdtime])
 
     while '06:30:00' < time.ctime().split(" ")[weirdtime] and time.ctime().split(" ")[weirdtime] <'12:30:00': #disable when testing
-        if timer == 0: #clear list and restart timer
+    #timer mechanism, limits it from texting me every second
+        if timer == 0: 
             list_of_stocks_moved = []
             timer = 15
         elif list_of_stocks_moved: #only decrement the time, if there's a value in the list
             timer -= 1
 
-        tickerdata = requests.get(f'https://financialmodelingprep.com/api/v3/quote/{stocks}?apikey={secret}').json()
-        print(f'directly from the API \n{tickerdata}') #test
-
-        for ii in tickerdata:
-            dic[ii['symbol']] = [ii['price'], ii['previousClose'], ii['volume'], ii['avgVolume']]
-        print(f'dictionary {dic}')
-
-        for ticker in dic:
-            drop2percent = myholdings[f'avg{ticker}holdings'] * 0.975 or dic[ticker][yesterdayClosePrice] * 0.975
-            drop5percent = myholdings[f'avg{ticker}holdings'] * 0.95 or dic[ticker][yesterdayClosePrice] * 0.95
-            rose5percent = myholdings[f'avg{ticker}holdings'] * 1.05 or dic[ticker][yesterdayClosePrice] * 1.05
-            rose2percent = myholdings[f'avg{ticker}holdings'] * 1.025 or dic[ticker][yesterdayClosePrice] * 1.025
+        for ticker in stocklist:
+            tickerInfo = finnhub_client.quote(ticker)
+            drop2percent = myholdings[f'avg{ticker}holdings'] * 0.975 or tickerInfo[yesterdayClosePrice] * 0.975
+            drop5percent = myholdings[f'avg{ticker}holdings'] * 0.95 or tickerInfo[yesterdayClosePrice] * 0.95
+            rose5percent = myholdings[f'avg{ticker}holdings'] * 1.05 or tickerInfo[yesterdayClosePrice] * 1.05
+            rose2percent = myholdings[f'avg{ticker}holdings'] * 1.025 or tickerInfo[yesterdayClosePrice] * 1.025
             
-            oneBigText = report_ticker_movement(ticker, dic[ticker][currprice], drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, oneBigText)
+            oneBigText = report_ticker_movement(ticker, tickerInfo[currprice], drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, oneBigText)
             time.sleep(redditPrawDelay)
 
         if oneBigText:
@@ -97,4 +91,4 @@ def report_ticker_movement(ticker, curr_price, drop5percent, drop2percent, rose5
             list_of_stocks_moved.append(ticker)
     return oneBigText
 
-track_ticker_price(stocks, secret)
+track_ticker_price(stocks)
