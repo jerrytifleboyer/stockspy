@@ -75,7 +75,7 @@ def determine_market_sentiment(sentiment_counter, pos_outlook, neg_outlook):
         sentiment = "BEARISH"
     else:
         sentiment = "NEUTRAL"
-    message = f'news is {sentiment}({pos_outlook}|{neg_outlook})'
+    message = f'{sentiment}({pos_outlook}|{neg_outlook})'
     return message
 
 # print(check_market_sentiment('AMD')) #test
