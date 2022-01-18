@@ -15,8 +15,8 @@ mytickers = {
 }
 
 today = date.today().strftime('%b. %#d, %Y')
-pos_list= ['positive', 'good', 'new ', 'rise', 'rising', 'gains', 'rall', 'jump', 'is up', 'are up', 'was up', 'bull', 'build', 'outperform', 'strong', 'best', 'buy', 'pop', 'win', 'upgrade', 'increas', 'top', 'growth']
-neg_list= ['sinks', 'selloff', 'scrutiny', 'fines', 'tumble', 'underperform', 'bad', 'criticism', 'recall', 'drop', 'problem', 'hurdle', 'looms', 'clos', 'anti', 'bear', 'ordered to change', '’t', 'end', 'meme', 'fall', 'downgrade', 'decreas', 'down', 'dip', 'late', 'loss', 'miss']
+pos_list= ['positive', 'good', 'new ', 'rise', 'rising', ' gain', 'rall', 'jump', 'is up', 'are up', 'was up', 'bull', 'build', 'outperform', 'strong', 'best', 'buy', 'pop', 'win', 'upgrade', 'increas', ' top', 'growth']
+neg_list= ['sinks', 'selloff', 'scrutiny', 'fines', 'tumble', 'underperform', 'bad', 'criticism', 'recall', 'drop', 'problem', 'hurdle', 'looms', 'clos', 'anti', 'bear', 'ordered to change', "'t", 'end', 'meme', 'fall', 'downgrade', 'decreas', 'down', 'dip', 'late', 'loss', 'miss']
 
 def check_market_sentiment(stock):
     sentiment_counter = 0
@@ -30,11 +30,10 @@ def check_market_sentiment(stock):
     print(stock) #testing
     for title in news:
         try:
-            #sometimes the headline isn't formatting correctly, skip it
+            #sometimes their headline isn't formatting correctly
             headline = title.h3.a.text.strip().lower()
         except:
             pass
-
         now = title.div.span.text
         if today in now and any(alternate_names in headline for alternate_names in mytickers[stock]):
             sentiment_counter, pos_outlook, neg_outlook, total, outlook = calculate_article_score(headline, sentiment_counter, pos_outlook, neg_outlook)

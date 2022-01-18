@@ -1,13 +1,13 @@
 #when adding new stocks, update: checkstockprice, checkWSB, marketsentiment
 myholdings = {
-    'avgAAPLholdings' : 0, #170
-    'avgNVDAholdings' : 0, #275
+    'avgAAPLholdings' : 170,
+    'avgNVDAholdings' : 260,
     'avgTSLAholdings' : 0, #920
-    'avgAMDholdings' : 150,
+    'avgAMDholdings' : 145,
     'avgGOOGholdings' : 2905,
-    'avgFBholdings' : 339,
+    'avgFBholdings' : 333,
     'avgMUholdings' : 95,
-    'avgMSFTholdings' : 328,
+    'avgMSFTholdings' : 324,
     'avgRBLXholdings' : 100
 }
 stocks = ["AAPL","NVDA","TSLA","AMD","GOOG","FB","MU","MSFT","RBLX"]
@@ -38,7 +38,7 @@ def track_ticker_price(stocklist):
     curr_time = 3 if len(time.ctime().split(" ")[3]) > 4 else 4
     print(time.ctime().split(" ")[curr_time])
 
-    while '06:30:00' < time.ctime().split(" ")[curr_time] < '12:30:00': #disable when testing
+    while '06:30:00' < time.ctime().split(" ")[curr_time] < '14:00:00': #disable when testing
     #timer mechanism, limits it from texting me every second
         if timer == 0: 
             list_of_stocks_moved = []
@@ -63,8 +63,6 @@ def track_ticker_price(stocklist):
 
 #check stock price, gather return info and text/discord me
 def report_ticker_movement(ticker, curr_price, yest_price, drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, oneBigText):
-    up = "\U0001F4C8"
-    down = "\U0001F4C9"
     my_cost_basis = myholdings[f'avg{ticker}holdings']
     downtrend = f'{round((((my_cost_basis or yest_price)-curr_price)/(my_cost_basis or yest_price))*100,2)}%'
     uptrend = f'{round(((curr_price-my_cost_basis or yest_price)/(my_cost_basis or yest_price))*100,2)}%'
@@ -74,7 +72,7 @@ def report_ticker_movement(ticker, curr_price, yest_price, drop5percent, drop2pe
         if drop5percent > curr_price:
             movement = f'{ticker}({round(curr_price)}) down {downtrend}'
             sentiment = check_market_sentiment(ticker)
-            oneBigText += f'{movement}, {sentiment}\n'
+            oneBigText += f'{movement} {sentiment}\n'
             check_subreddits(ticker)
             list_of_stocks_moved.append(ticker)
         elif drop2percent > curr_price:
@@ -86,7 +84,7 @@ def report_ticker_movement(ticker, curr_price, yest_price, drop5percent, drop2pe
         elif rose5percent < curr_price:
             movement = f'{ticker}({round(curr_price)}) up {uptrend}'
             sentiment = check_market_sentiment(ticker)
-            oneBigText += f'{movement}, {sentiment}\n'
+            oneBigText += f'{movement} {sentiment}\n'
             check_subreddits(ticker)
             list_of_stocks_moved.append(ticker)
         elif rose2percent < curr_price:
