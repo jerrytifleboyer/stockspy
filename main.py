@@ -1,16 +1,16 @@
 #when adding new stocks, update: checkstockprice, checkWSB, marketsentiment
 myholdings = {
-    'avgAAPLholdings' : 170,
     'avgNVDAholdings' : 260,
-    'avgTSLAholdings' : 0, #920
-    'avgAMDholdings' : 145,
+    'avgAMDholdings' : 140,
     'avgGOOGholdings' : 2905,
     'avgFBholdings' : 333,
-    'avgMUholdings' : 95,
     'avgMSFTholdings' : 324,
+    'avgAAPLholdings' : 0, #168
+    'avgMUholdings' : 95,
+    'avgTSLAholdings' : 0, #920
     'avgRBLXholdings' : 100
 }
-stocks = ["AAPL","NVDA","TSLA","AMD","GOOG","FB","MU","MSFT","RBLX"]
+stocks = ['AAPL','NVDA','TSLA','AMD','GOOG','FB','MU','MSFT','RBLX']
 
 import finnhub
 import json
@@ -21,76 +21,86 @@ from marketsentiment import check_market_sentiment
 
 with open('config/pw.json') as f:
     data = json.load(f)
-    secret = data["finnhub"]["secret"]
+    secret = data['finnhub']['secret']
     finnhub_client = finnhub.Client(api_key=secret)
 
 def track_ticker_price(stocklist):
-    currprice = "c"
-    yesterdayClosePrice = "pc"
-    oneBigText = ""
+    movement_tracker = {
+        'huge_drops' : '',
+        'large_movements' : '',
+        'small_movements' : ''
+    }
+    currprice = 'c'
+    yesterdayClosePrice = 'pc'
     
     list_of_stocks_moved = []
-    timer = 30
-    stockAPIdelay = 60
-    redditPrawDelay = 5
+    timer = 20
+    api_delay = 60
+    reddit_delay = 5
+    text_delay = 4
 
     #i think this is the issue, the time from import moves either to position 3/4 thus:
-    curr_time = 3 if len(time.ctime().split(" ")[3]) > 4 else 4
-    print(time.ctime().split(" ")[curr_time])
+    curr_time = 3 if len(time.ctime().split(' ')[3]) > 4 else 4
+    print(time.ctime().split(' ')[curr_time])
 
-    while '06:30:00' < time.ctime().split(" ")[curr_time] < '14:00:00': #disable when testing
+    while '06:00:00' < time.ctime().split(' ')[curr_time] < '12:59:00': #disable when testing
     #timer mechanism, limits it from texting me every second
         if timer == 0: 
             list_of_stocks_moved = []
-            timer = 30
+            timer = 20
         elif list_of_stocks_moved: #only decrement the time, if there's a value in the list
             timer -= 1
 
         for ticker in stocklist:
             tickerInfo = finnhub_client.quote(ticker)
-            drop2percent = myholdings[f'avg{ticker}holdings'] * 0.975 or tickerInfo[yesterdayClosePrice] * 0.975
+            drop2percent = myholdings[f'avg{ticker}holdings'] * 0.98 or tickerInfo[yesterdayClosePrice] * 0.98
             drop5percent = myholdings[f'avg{ticker}holdings'] * 0.95 or tickerInfo[yesterdayClosePrice] * 0.95
+            drop10percent = myholdings[f'avg{ticker}holdings'] * 0.9 or tickerInfo[yesterdayClosePrice] * 0.9
+            rose2percent = myholdings[f'avg{ticker}holdings'] * 1.02 or tickerInfo[yesterdayClosePrice] * 1.02
             rose5percent = myholdings[f'avg{ticker}holdings'] * 1.05 or tickerInfo[yesterdayClosePrice] * 1.05
-            rose2percent = myholdings[f'avg{ticker}holdings'] * 1.025 or tickerInfo[yesterdayClosePrice] * 1.025
-            oneBigText = report_ticker_movement(ticker, tickerInfo[currprice], tickerInfo[yesterdayClosePrice], drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, oneBigText)
-            time.sleep(redditPrawDelay)
+            report_ticker_movement(ticker, tickerInfo[currprice], tickerInfo[yesterdayClosePrice], drop10percent, drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, movement_tracker)
+            time.sleep(reddit_delay)
 
-        if oneBigText:
-            textme(oneBigText)
-            oneBigText = ""
+        for ii,jj in movement_tracker.items():
+            if jj:
+                textme(jj)
+                movement_tracker.update({ii:''})
+                time.sleep(text_delay)
 
-        time.sleep(stockAPIdelay) #disable when testing
+        time.sleep(api_delay) #disable when testing
 
 #check stock price, gather return info and text/discord me
-def report_ticker_movement(ticker, curr_price, yest_price, drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, oneBigText):
+def report_ticker_movement(ticker, curr_price, yest_price, drop10percent, drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, movement_tracker):
     my_cost_basis = myholdings[f'avg{ticker}holdings']
-    downtrend = f'{round((((my_cost_basis or yest_price)-curr_price)/(my_cost_basis or yest_price))*100,2)}%'
-    uptrend = f'{round(((curr_price-my_cost_basis or yest_price)/(my_cost_basis or yest_price))*100,2)}%'
+    downtrend = f'{round((((my_cost_basis or yest_price) - curr_price)/(my_cost_basis or yest_price))*100,2)}%'
+    uptrend = f'{round(((curr_price - my_cost_basis or yest_price)/(my_cost_basis or yest_price))*100,2)}%'
 
     if ticker not in list_of_stocks_moved:
         #price drops, BUY
-        if drop5percent > curr_price:
-            movement = f'{ticker}({round(curr_price)}) down {downtrend}'
+        if drop10percent > curr_price:
+            movement = f'{ticker}({round(curr_price)}) --{downtrend}'
             sentiment = check_market_sentiment(ticker)
-            oneBigText += f'{movement} {sentiment}\n'
+            movement_tracker['huge_drops'] += f'{movement}\n{sentiment}\n'
+        elif drop5percent > curr_price:
+            movement = f'{ticker}({round(curr_price)}) --{downtrend}'
+            sentiment = check_market_sentiment(ticker)
+            movement_tracker['large_movements'] += f'{movement}\n{sentiment}\n'
             check_subreddits(ticker)
-            list_of_stocks_moved.append(ticker)
         elif drop2percent > curr_price:
-            movement = f'{ticker}({round(curr_price)}) down {downtrend}'
-            textme(movement)
-            list_of_stocks_moved.append(ticker)
+            movement = f'{ticker}({round(curr_price)}) --{downtrend}'
+            sentiment = check_market_sentiment(ticker)
+            movement_tracker['small_movements'] += f'{movement}\n{sentiment}\n'
 
         #price goes up, SELL
         elif rose5percent < curr_price:
-            movement = f'{ticker}({round(curr_price)}) up {uptrend}'
+            movement = f'{ticker}({round(curr_price)}) ++{uptrend}'
             sentiment = check_market_sentiment(ticker)
-            oneBigText += f'{movement} {sentiment}\n'
+            movement_tracker['large_movements'] += f'{movement}\n{sentiment}\n'
             check_subreddits(ticker)
-            list_of_stocks_moved.append(ticker)
         elif rose2percent < curr_price:
-            movement = f'{ticker}({round(curr_price)}) up {uptrend}'
-            textme(movement)
-            list_of_stocks_moved.append(ticker)
-    return oneBigText
+            movement = f'{ticker}({round(curr_price)}) ++{uptrend}'
+            sentiment = check_market_sentiment(ticker)
+            movement_tracker['small_movements'] += f'{movement}\n{sentiment}\n'
+        list_of_stocks_moved.append(ticker)
 
 track_ticker_price(stocks)
