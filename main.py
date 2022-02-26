@@ -3,12 +3,12 @@ myholdings = {
     'avgNVDAholdings' : 260,
     'avgAMDholdings' : 140,
     'avgGOOGholdings' : 2905,
-    'avgFBholdings' : 333,
+    'avgFBholdings' : 300,
     'avgMSFTholdings' : 324,
-    'avgAAPLholdings' : 0, #168
-    'avgMUholdings' : 95,
-    'avgTSLAholdings' : 0, #920
-    'avgRBLXholdings' : 100
+    'avgAAPLholdings' : 0, #160
+    'avgMUholdings' : 91,
+    'avgTSLAholdings' : 0, #900
+    'avgRBLXholdings' : 88
 }
 stocks = ['AAPL','NVDA','TSLA','AMD','GOOG','FB','MU','MSFT','RBLX']
 
@@ -16,8 +16,7 @@ import finnhub
 import json
 import time
 from textme import textme
-from checkWSB import check_subreddits
-from marketsentiment import check_market_sentiment
+from marketwatch_sentiment import check_market_sentiment
 
 with open('config/pw.json') as f:
     data = json.load(f)
@@ -34,7 +33,7 @@ def track_ticker_price(stocklist):
     yesterdayClosePrice = 'pc'
     
     list_of_stocks_moved = []
-    timer = 20
+    timer = 30
     api_delay = 60
     reddit_delay = 5
     text_delay = 4
@@ -61,13 +60,13 @@ def track_ticker_price(stocklist):
             report_ticker_movement(ticker, tickerInfo[currprice], tickerInfo[yesterdayClosePrice], drop10percent, drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, movement_tracker)
             time.sleep(reddit_delay)
 
-        for ii,jj in movement_tracker.items():
-            if jj:
-                textme(jj)
-                movement_tracker.update({ii:''})
+        for key,stocks_moved in movement_tracker.items():
+            if stocks_moved:
+                textme(stocks_moved)
+                movement_tracker.update({key:''})
                 time.sleep(text_delay)
 
-        time.sleep(api_delay) #disable when testing
+        time.sleep(api_delay) #disable when testingf
 
 #check stock price, gather return info and text/discord me
 def report_ticker_movement(ticker, curr_price, yest_price, drop10percent, drop5percent, drop2percent, rose5percent, rose2percent, list_of_stocks_moved, movement_tracker):
@@ -85,7 +84,6 @@ def report_ticker_movement(ticker, curr_price, yest_price, drop10percent, drop5p
             movement = f'{ticker}({round(curr_price)}) --{downtrend}'
             sentiment = check_market_sentiment(ticker)
             movement_tracker['large_movements'] += f'{movement}\n{sentiment}\n'
-            check_subreddits(ticker)
         elif drop2percent > curr_price:
             movement = f'{ticker}({round(curr_price)}) --{downtrend}'
             sentiment = check_market_sentiment(ticker)
@@ -96,7 +94,6 @@ def report_ticker_movement(ticker, curr_price, yest_price, drop10percent, drop5p
             movement = f'{ticker}({round(curr_price)}) ++{uptrend}'
             sentiment = check_market_sentiment(ticker)
             movement_tracker['large_movements'] += f'{movement}\n{sentiment}\n'
-            check_subreddits(ticker)
         elif rose2percent < curr_price:
             movement = f'{ticker}({round(curr_price)}) ++{uptrend}'
             sentiment = check_market_sentiment(ticker)
