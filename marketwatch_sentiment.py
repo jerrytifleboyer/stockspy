@@ -3,18 +3,7 @@ import requests
 from datetime import date
 from config.positive_list import pos_list
 from config.negative_list import neg_list
-
-mytickers = {
-    'AAPL':['apple', 'aapl'],
-    'TSLA':['tesla', 'tsla'],
-    'NVDA':['nvidia', 'nvda'],
-    'AMD':['advanced micro devices','amd'],
-    'GOOG':['goog', 'alphabet'],
-    'FB':['meta', 'facebook', 'fb'],
-    'MU':['micron'],
-    'MSFT':['microsoft', 'msft'],
-    'RBLX':['roblox', 'rblx']
-}
+from config.controller import mytickers
 
 today = date.today().strftime('%b. %#d, %Y')
 

@@ -1,22 +1,9 @@
-#when adding new stocks, update: checkstockprice, checkWSB, marketsentiment
-myholdings = {
-    'avgNVDAholdings' : 260,
-    'avgAMDholdings' : 140,
-    'avgGOOGholdings' : 2905,
-    'avgFBholdings' : 300,
-    'avgMSFTholdings' : 324,
-    'avgAAPLholdings' : 0, #160
-    'avgMUholdings' : 91,
-    'avgTSLAholdings' : 0, #900
-    'avgRBLXholdings' : 88
-}
-stocks = ['AAPL','NVDA','TSLA','AMD','GOOG','FB','MU','MSFT','RBLX']
-
 import finnhub
 import json
 import time
 from textme import textme
 from marketwatch_sentiment import check_market_sentiment
+from config.controller import myholdings, stocks
 
 with open('config/pw.json') as f:
     data = json.load(f)
@@ -43,7 +30,7 @@ def track_ticker_price(stocklist):
     print(time.ctime().split(' ')[curr_time])
 
     while '06:00:00' < time.ctime().split(' ')[curr_time] < '12:59:00': #disable when testing
-    #timer mechanism, limits it from texting me every second
+        #timer mechanism, limits it from texting me every second
         if timer == 0: 
             list_of_stocks_moved = []
             timer = 20
@@ -51,6 +38,7 @@ def track_ticker_price(stocklist):
             timer -= 1
 
         for ticker in stocklist:
+            #https://finnhub.io/docs/api/quote
             tickerInfo = finnhub_client.quote(ticker)
             drop2percent = myholdings[f'avg{ticker}holdings'] * 0.98 or tickerInfo[yesterdayClosePrice] * 0.98
             drop5percent = myholdings[f'avg{ticker}holdings'] * 0.95 or tickerInfo[yesterdayClosePrice] * 0.95
