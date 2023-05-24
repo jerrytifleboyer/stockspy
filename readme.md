@@ -1,4 +1,4 @@
-WELCOME TO THE STOCK CHECKER
+WELCOME TO THE STOCK CHECKER (deprecated)
 - this project was for fun to see if i could get text notifs on stock price movement
 
 -if anything is not working delete your ENV folder, reinstall the virtual ENV:
